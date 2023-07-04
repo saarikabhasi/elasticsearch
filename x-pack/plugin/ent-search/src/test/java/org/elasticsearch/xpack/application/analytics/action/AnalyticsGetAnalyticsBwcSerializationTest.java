@@ -9,14 +9,14 @@ package org.elasticsearch.xpack.application.analytics.action;
 
 import org.elasticsearch.TransportVersion;
 import org.elasticsearch.common.io.stream.Writeable;
-import org.elasticsearch.xcontent.ToXContent;
+import org.elasticsearch.test.ESTestCase;
 import org.elasticsearch.xcontent.XContentParser;
 import org.elasticsearch.xpack.application.analytics.AnalyticsCollection;
 import org.elasticsearch.xpack.core.ml.AbstractBWCSerializationTestCase;
 
 import java.io.IOException;
 
-public class AnalyticsGetAnalyticsSerializationTest extends AbstractBWCSerializationTestCase<AnalyticsCollection> {
+public class AnalyticsGetAnalyticsBwcSerializationTest extends AbstractBWCSerializationTestCase<AnalyticsCollection> {
 
 
     @Override

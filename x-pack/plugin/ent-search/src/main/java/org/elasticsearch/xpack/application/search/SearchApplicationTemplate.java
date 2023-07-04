@@ -7,6 +7,7 @@
 
 package org.elasticsearch.xpack.application.search;
 
+import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.ValidationException;
 import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
@@ -98,7 +99,9 @@ public class SearchApplicationTemplate implements ToXContentObject, Writeable {
         );
         PARSER.declareObject(optionalConstructorArg(), (p, c) -> {
             try (XContentBuilder builder = XContentFactory.jsonBuilder()) {
-                return new TemplateParamValidator(builder.copyCurrentStructure(p));
+                XContentBuilder test =   builder.copyCurrentStructure(p);
+                System.out.println("VAR" + test + ""+Strings.toString(test));
+                return new TemplateParamValidator(test);
             }
         }, DICTIONARY_FIELD);
     }
@@ -138,6 +141,10 @@ public class SearchApplicationTemplate implements ToXContentObject, Writeable {
 
     public Script script() {
         return script;
+    }
+
+    public TemplateParamValidator templateParamValidator(){
+        return templateParamValidator;
     }
 
 }

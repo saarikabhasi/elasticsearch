@@ -16,15 +16,21 @@ import org.elasticsearch.common.io.stream.Writeable;
 import org.elasticsearch.common.xcontent.XContentHelper;
 import org.elasticsearch.xcontent.ConstructingObjectParser;
 import org.elasticsearch.xcontent.ObjectParser;
+import org.elasticsearch.xcontent.ParseField;
 import org.elasticsearch.xcontent.ToXContentObject;
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.xcontent.XContentParser;
 import org.elasticsearch.xcontent.XContentParserConfiguration;
 import org.elasticsearch.xcontent.XContentType;
+import org.elasticsearch.xpack.application.search.SearchApplication;
+import org.elasticsearch.xpack.application.search.SearchApplicationTemplate;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
+import static org.elasticsearch.xcontent.ConstructingObjectParser.constructorArg;
+import static org.elasticsearch.xcontent.ConstructingObjectParser.optionalConstructorArg;
 import static org.elasticsearch.xpack.application.analytics.AnalyticsConstants.EVENT_DATA_STREAM_INDEX_PREFIX;
 import static org.elasticsearch.xpack.application.search.SearchApplicationListItem.NAME_FIELD;
 
@@ -33,10 +39,20 @@ import static org.elasticsearch.xpack.application.search.SearchApplicationListIt
  */
 public class AnalyticsCollection implements Writeable, ToXContentObject {
 
-    private static final ObjectParser<AnalyticsCollection, String> PARSER = ObjectParser.fromBuilder(
+
+    private static final ConstructingObjectParser<AnalyticsCollection, String> PARSER = new ConstructingObjectParser<>(
         "analytics_collection",
-        name -> new AnalyticsCollection(name)
+        false,
+        (params) -> {
+            return new AnalyticsCollection((String) params[0]);
+        }
     );
+
+
+    public static final ParseField NAME_FIELD = new ParseField("name");
+    static {
+        PARSER.declareString(optionalConstructorArg(), NAME_FIELD);
+    }
 
     private final String name;
 
@@ -46,6 +62,9 @@ public class AnalyticsCollection implements Writeable, ToXContentObject {
      * @param name Name of the analytics collection.
      */
     public AnalyticsCollection(String name) {
+        if (Strings.isNullOrEmpty(name)) {
+            throw new IllegalArgumentException("Analytics name cannot be null or blank");
+        }
         this.name = Objects.requireNonNull(name);
     }
 
@@ -78,6 +97,8 @@ public class AnalyticsCollection implements Writeable, ToXContentObject {
     public static AnalyticsCollection parse(XContentParser parser) {
         return PARSER.apply(parser, null);
     }
+
+
     /**
      * Serialize the {@link AnalyticsCollection} to a XContent.
      *
@@ -86,6 +107,9 @@ public class AnalyticsCollection implements Writeable, ToXContentObject {
     @Override
     public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
         builder.startObject();
+        if (name!=null) {
+            builder.field(NAME_FIELD.getPreferredName(), name);
+        }
         builder.endObject();
 
         return builder;

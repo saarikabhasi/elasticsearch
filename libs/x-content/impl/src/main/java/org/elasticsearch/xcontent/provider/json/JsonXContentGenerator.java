@@ -11,6 +11,7 @@ package org.elasticsearch.xcontent.provider.json;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonStreamContext;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.base.GeneratorBase;
 import com.fasterxml.jackson.core.filter.FilteringGeneratorDelegate;
 import com.fasterxml.jackson.core.io.SerializedString;
@@ -497,6 +498,7 @@ public class JsonXContentGenerator implements XContentGenerator {
             parser.nextToken();
         }
         if (parser instanceof JsonXContentParser) {
+            //System.out.println("JsonXContentGenerator.copyCurrentStructure:: "+ parser.mapOrdered());
             generator.copyCurrentStructure(((JsonXContentParser) parser).parser);
         } else {
             copyCurrentStructure(this, parser);
