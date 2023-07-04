@@ -11,13 +11,20 @@ import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
 import org.elasticsearch.common.io.stream.Writeable;
 import org.elasticsearch.core.Nullable;
+import org.elasticsearch.xcontent.ConstructingObjectParser;
 import org.elasticsearch.xcontent.ParseField;
 import org.elasticsearch.xcontent.ToXContentObject;
 import org.elasticsearch.xcontent.XContentBuilder;
+import org.elasticsearch.xcontent.XContentParser;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+
+import static org.elasticsearch.xcontent.ConstructingObjectParser.constructorArg;
+import static org.elasticsearch.xcontent.ConstructingObjectParser.optionalConstructorArg;
 
 /**
  * This class is used for returning information for lists of search applications, to avoid including all
@@ -25,11 +32,6 @@ import java.util.Objects;
  */
 public class SearchApplicationListItem implements Writeable, ToXContentObject {
 
-    public static final ParseField NAME_FIELD = new ParseField("name");
-    public static final ParseField INDICES_FIELD = new ParseField("indices");
-    public static final ParseField ANALYTICS_COLLECTION_NAME_FIELD = new ParseField("analytics_collection_name");
-
-    public static final ParseField UPDATED_AT_MILLIS_FIELD = new ParseField("updated_at_millis");
     private final String name;
     private final String[] indices;
     private final String analyticsCollectionName;
@@ -62,6 +64,37 @@ public class SearchApplicationListItem implements Writeable, ToXContentObject {
         this.updatedAtMillis = in.readLong();
     }
 
+
+
+    private static final ConstructingObjectParser<SearchApplicationListItem, Void> PARSER = new ConstructingObjectParser<>(
+        "search_application_list_item",
+        false,
+        (params) -> {
+            final String name = (String) params[0];
+            final String[] indices = ((List<String>) params[1]).toArray(String[]::new);
+            final String analyticsCollectionName = (String) params[2];
+            final Long maybeUpdatedAtMillis = (Long) params[3];
+            long updatedAtMillis = (maybeUpdatedAtMillis != null ? maybeUpdatedAtMillis : System.currentTimeMillis());
+            return new SearchApplicationListItem(name, indices, analyticsCollectionName, updatedAtMillis);
+        }
+    );
+    public static SearchApplicationListItem parse(XContentParser parser) {
+        return PARSER.apply(parser, null);
+    }
+    public static final ParseField NAME_FIELD = new ParseField("name");
+    public static final ParseField INDICES_FIELD = new ParseField("indices");
+    public static final ParseField ANALYTICS_COLLECTION_NAME_FIELD = new ParseField("analytics_collection_name");
+
+    public static final ParseField UPDATED_AT_MILLIS_FIELD = new ParseField("updated_at_millis");
+    static {
+        PARSER.declareString(constructorArg(), NAME_FIELD);
+        PARSER.declareStringArray(constructorArg(), INDICES_FIELD);
+        PARSER.declareStringOrNull(optionalConstructorArg(), ANALYTICS_COLLECTION_NAME_FIELD);
+        PARSER.declareLong(constructorArg(), UPDATED_AT_MILLIS_FIELD);
+    }
+    public static SearchApplicationListItem fromXContent(Void name, XContentParser parser) throws IOException {
+        return PARSER.parse(parser, name);
+    }
     @Override
     public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
         builder.startObject();
