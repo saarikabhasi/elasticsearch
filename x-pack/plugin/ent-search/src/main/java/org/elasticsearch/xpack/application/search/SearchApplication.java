@@ -174,6 +174,10 @@ public class SearchApplication implements Writeable, ToXContentObject {
         return PARSER.parse(parser, resourceName);
     }
 
+
+    public static SearchApplication parse(XContentParser parser) {
+        return PARSER.apply(parser, null);
+    }
     /**
      * Converts the {@link SearchApplication} to XContent.
      *

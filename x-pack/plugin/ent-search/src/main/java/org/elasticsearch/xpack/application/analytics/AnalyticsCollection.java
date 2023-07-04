@@ -14,6 +14,7 @@ import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
 import org.elasticsearch.common.io.stream.Writeable;
 import org.elasticsearch.common.xcontent.XContentHelper;
+import org.elasticsearch.xcontent.ConstructingObjectParser;
 import org.elasticsearch.xcontent.ObjectParser;
 import org.elasticsearch.xcontent.ToXContentObject;
 import org.elasticsearch.xcontent.XContentBuilder;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 import static org.elasticsearch.xpack.application.analytics.AnalyticsConstants.EVENT_DATA_STREAM_INDEX_PREFIX;
+import static org.elasticsearch.xpack.application.search.SearchApplicationListItem.NAME_FIELD;
 
 /**
  * The {@link AnalyticsCollection} model.
@@ -73,6 +75,9 @@ public class AnalyticsCollection implements Writeable, ToXContentObject {
         return EVENT_DATA_STREAM_INDEX_PREFIX + name;
     }
 
+    public static AnalyticsCollection parse(XContentParser parser) {
+        return PARSER.apply(parser, null);
+    }
     /**
      * Serialize the {@link AnalyticsCollection} to a XContent.
      *
