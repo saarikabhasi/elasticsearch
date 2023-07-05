@@ -13,11 +13,20 @@ import org.elasticsearch.action.ActionType;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
+import org.elasticsearch.xcontent.ConstructingObjectParser;
+import org.elasticsearch.xcontent.ParseField;
+import org.elasticsearch.xcontent.ToXContent;
+import org.elasticsearch.xcontent.ToXContentObject;
+import org.elasticsearch.xcontent.XContentBuilder;
+import org.elasticsearch.xcontent.XContentParser;
+import org.elasticsearch.xpack.core.action.util.PageParams;
+import org.elasticsearch.xpack.core.action.util.QueryPage;
 
 import java.io.IOException;
 import java.util.Objects;
 
 import static org.elasticsearch.action.ValidateActions.addValidationError;
+import static org.elasticsearch.xcontent.ConstructingObjectParser.constructorArg;
 
 public class DeleteSearchApplicationAction extends ActionType<AcknowledgedResponse> {
 
@@ -28,8 +37,10 @@ public class DeleteSearchApplicationAction extends ActionType<AcknowledgedRespon
         super(NAME, AcknowledgedResponse::readFrom);
     }
 
-    public static class Request extends ActionRequest {
+    public static class Request extends ActionRequest implements ToXContentObject {
         private final String name;
+
+        public static ParseField NAME_FIELD = new ParseField("name");
 
         public Request(StreamInput in) throws IOException {
             super(in);
@@ -72,6 +83,25 @@ public class DeleteSearchApplicationAction extends ActionType<AcknowledgedRespon
         @Override
         public int hashCode() {
             return Objects.hash(name);
+        }
+
+        @Override
+        public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
+            builder.startObject();
+            builder.field(NAME_FIELD.getPreferredName(), name);
+            builder.endObject();
+            return builder;
+        }
+        private static final ConstructingObjectParser<Request, Void> PARSER = new ConstructingObjectParser<>(
+            "delete_search_application_action_request",
+            p -> new Request((String) p[0])
+        );
+
+        static{
+            PARSER.declareString(constructorArg(), NAME_FIELD);
+        }
+        public static Request parse(XContentParser parser) {
+            return PARSER.apply(parser, null);
         }
     }
 
