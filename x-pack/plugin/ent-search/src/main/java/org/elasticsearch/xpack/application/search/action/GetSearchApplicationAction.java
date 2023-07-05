@@ -11,17 +11,26 @@ import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.ActionRequestValidationException;
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.ActionType;
+import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
+import org.elasticsearch.script.Script;
+import org.elasticsearch.xcontent.ConstructingObjectParser;
+import org.elasticsearch.xcontent.ParseField;
+import org.elasticsearch.xcontent.ToXContent;
 import org.elasticsearch.xcontent.ToXContentObject;
 import org.elasticsearch.xcontent.XContentBuilder;
+import org.elasticsearch.xcontent.XContentParser;
 import org.elasticsearch.xpack.application.search.SearchApplication;
 import org.elasticsearch.xpack.application.search.SearchApplicationTemplate;
+import org.elasticsearch.xpack.application.search.TemplateParamValidator;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
 import static org.elasticsearch.action.ValidateActions.addValidationError;
+import static org.elasticsearch.xcontent.ConstructingObjectParser.constructorArg;
 
 public class GetSearchApplicationAction extends ActionType<GetSearchApplicationAction.Response> {
 
@@ -32,8 +41,10 @@ public class GetSearchApplicationAction extends ActionType<GetSearchApplicationA
         super(NAME, GetSearchApplicationAction.Response::new);
     }
 
-    public static class Request extends ActionRequest {
+    public static class Request extends ActionRequest implements ToXContentObject {
         private final String name;
+
+        public static final ParseField NAME_FIELD = new ParseField("name");
 
         public Request(StreamInput in) throws IOException {
             super(in);
@@ -77,6 +88,26 @@ public class GetSearchApplicationAction extends ActionType<GetSearchApplicationA
         public int hashCode() {
             return Objects.hash(name);
         }
+
+        private static final ConstructingObjectParser<Request, Void> PARSER = new ConstructingObjectParser<>(
+            "get_search_application_request",
+            p -> new Request((String) p[0])
+        );
+
+        static {
+            PARSER.declareString(constructorArg(),NAME_FIELD);
+        }
+        public static Request parse(XContentParser parser) {
+            return PARSER.apply(parser, null);
+        }
+
+        @Override
+        public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
+            builder.startObject();
+            builder.field(NAME_FIELD.getPreferredName(), name);
+            builder.endObject();
+            return builder;
+        }
     }
 
     public static class Response extends ActionResponse implements ToXContentObject {
@@ -88,7 +119,9 @@ public class GetSearchApplicationAction extends ActionType<GetSearchApplicationA
             this.searchApp = new SearchApplication(in);
         }
 
+
         public Response(SearchApplication app) {
+            Objects.requireNonNull(app, "Search Application cannot be null");
             this.searchApp = app;
         }
 
@@ -99,17 +132,50 @@ public class GetSearchApplicationAction extends ActionType<GetSearchApplicationA
             long updatedAtMillis,
             SearchApplicationTemplate template
         ) {
-            this.searchApp = new SearchApplication(name, indices, analyticsCollectionName, updatedAtMillis, template);
+            if (Strings.isNullOrEmpty(name)) {
+                throw new IllegalArgumentException("Search Application name cannot be null or blank");
+            }
+//            if (name!=null){
+                this.searchApp = new SearchApplication(name, indices, analyticsCollectionName, updatedAtMillis, template);
+//            }
+//            else {
+//                this
+//            }
+
+        }
+
+        private static final ConstructingObjectParser<Response, String> PARSER = new ConstructingObjectParser<>(
+            "get_search_application_response",
+            p -> new Response((String) p[0], ((List<String>) p[1]).toArray(String[]::new), (String)p[2], (Long)p[3], (SearchApplicationTemplate)p[4])
+        );
+        public static final ParseField SEARCH_APPLICATION_FIELD = new ParseField("searchApp");
+
+        static {
+            PARSER.declareObject(constructorArg(),(p, c) -> SearchApplication.parse(p), SEARCH_APPLICATION_FIELD);
+        }
+        public static Response parse(XContentParser parser) {
+            return PARSER.apply(parser, null);
+        }
+        public static Response fromXContent(String resourceName, XContentParser parser) throws IOException {
+            return PARSER.parse(parser, resourceName);
         }
 
         @Override
         public void writeTo(StreamOutput out) throws IOException {
             searchApp.writeTo(out);
         }
+        public SearchApplication searchApp(){
+            return searchApp;
+        }
 
         @Override
         public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
-            return searchApp.toXContent(builder, params);
+            builder.startObject();
+            if(searchApp.name()!=null) {
+                builder.field(SEARCH_APPLICATION_FIELD.getPreferredName(), searchApp);
+            }
+            builder.endObject();
+            return builder;
         }
 
         @Override
