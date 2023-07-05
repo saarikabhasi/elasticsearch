@@ -13,6 +13,7 @@ import org.elasticsearch.xcontent.ConstructingObjectParser;
 import org.elasticsearch.xcontent.ParseField;
 import org.elasticsearch.xcontent.ToXContentObject;
 import org.elasticsearch.xcontent.XContentBuilder;
+import org.elasticsearch.xcontent.XContentParser;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -45,7 +46,9 @@ public class PageParams implements ToXContentObject, Writeable {
     public static PageParams defaultParams() {
         return new PageParams(DEFAULT_FROM, DEFAULT_SIZE);
     }
-
+    public static PageParams parse(XContentParser parser) {
+        return PARSER.apply(parser, null);
+    }
     public PageParams(StreamInput in) throws IOException {
         this(in.readVInt(), in.readVInt());
     }
