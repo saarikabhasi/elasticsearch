@@ -20,7 +20,6 @@ import org.elasticsearch.core.Nullable;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.xcontent.ConstructingObjectParser;
 import org.elasticsearch.xcontent.ParseField;
-import org.elasticsearch.xcontent.ToXContent;
 import org.elasticsearch.xcontent.ToXContentObject;
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.xcontent.XContentParser;
@@ -107,23 +106,23 @@ public class ListSearchApplicationAction extends ActionType<ListSearchApplicatio
             p -> new Request((String) p[0], (PageParams) p[1])
         );
         static {
-            PARSER.declareString(optionalConstructorArg(),QUERY_FIELD);
-            PARSER.declareObject(constructorArg(), (p,c) -> PageParams.parse(p), PAGE_PARAMS_FIELD);
+            PARSER.declareString(optionalConstructorArg(), QUERY_FIELD);
+            PARSER.declareObject(constructorArg(), (p, c) -> PageParams.parse(p), PAGE_PARAMS_FIELD);
         }
+
         public static Request parse(XContentParser parser) {
             return PARSER.apply(parser, null);
         }
-//        public static Request fromXContent(XContentParser parser) throws IOException {
-//            return PARSER.parse(parser, null);
-//        }
+        // public static Request fromXContent(XContentParser parser) throws IOException {
+        // return PARSER.parse(parser, null);
+        // }
 
         @Override
         public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
             builder.startObject();
-            if (query != null){
+            if (query != null) {
                 builder.field(QUERY_FIELD.getPreferredName(), query);
             }
-
 
             builder.field(PAGE_PARAMS_FIELD.getPreferredName(), pageParams);
 
@@ -144,22 +143,27 @@ public class ListSearchApplicationAction extends ActionType<ListSearchApplicatio
             super(in);
             this.queryPage = new QueryPage<>(in, SearchApplicationListItem::new);
         }
-        public Response(QueryPage queryPageObj) {
+
+        public Response(QueryPage<SearchApplicationListItem> queryPageObj) {
             Objects.requireNonNull(queryPageObj, "Query page cannot be null");
             this.queryPage = queryPageObj;
         }
+
         public Response(List<SearchApplicationListItem> items, Long totalResults) {
             this.queryPage = new QueryPage<>(items, totalResults, RESULT_FIELD);
         }
+
+        @SuppressWarnings("unchecked")
         private static final ConstructingObjectParser<Response, Void> PARSER = new ConstructingObjectParser<>(
             "list_search_application_action_response",
-            p -> new Response((QueryPage) p[0])
+            p -> new Response((QueryPage<SearchApplicationListItem>) p[0])
         );
 
         static {
 
-//            PARSER.declareObject(constructorArg(), (p,c) -> QueryPage.parse(p), RESULT_FIELD);
+            // PARSER.declareObject(constructorArg(), (p,c) -> QueryPage.parse(p), RESULT_FIELD);
         }
+
         public static Response parse(XContentParser parser) {
             return PARSER.apply(parser, null);
         }
@@ -172,11 +176,11 @@ public class ListSearchApplicationAction extends ActionType<ListSearchApplicatio
         @Override
         public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
             builder.startObject();
-            builder.field(QUERY_PAGE.getPreferredName(), queryPage );
+            builder.field(QUERY_PAGE.getPreferredName(), queryPage);
             builder.endObject();
             return builder;
 
-            //            return queryPage.toXContent(builder, params);
+            // return queryPage.toXContent(builder, params);
         }
 
         @Override

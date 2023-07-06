@@ -9,9 +9,7 @@ package org.elasticsearch.xpack.application.search.action;
 
 import org.elasticsearch.TransportVersion;
 import org.elasticsearch.common.io.stream.Writeable;
-import org.elasticsearch.test.AbstractWireSerializingTestCase;
 import org.elasticsearch.xcontent.XContentParser;
-import org.elasticsearch.xpack.application.search.SearchApplication;
 import org.elasticsearch.xpack.application.search.SearchApplicationTestUtils;
 import org.elasticsearch.xpack.core.ml.AbstractBWCSerializationTestCase;
 
@@ -37,11 +35,14 @@ public class GetSearchApplicationActionResponseSerializingTests extends Abstract
 
     @Override
     protected GetSearchApplicationAction.Response doParseInstance(XContentParser parser) throws IOException {
-        return  GetSearchApplicationAction.Response.parse(parser);
+        return GetSearchApplicationAction.Response.parse(parser);
     }
 
     @Override
-    protected GetSearchApplicationAction.Response mutateInstanceForVersion(GetSearchApplicationAction.Response instance, TransportVersion version) {
+    protected GetSearchApplicationAction.Response mutateInstanceForVersion(
+        GetSearchApplicationAction.Response instance,
+        TransportVersion version
+    ) {
         return new GetSearchApplicationAction.Response(instance.searchApp());
     }
 }

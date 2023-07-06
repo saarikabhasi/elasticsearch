@@ -9,7 +9,6 @@ package org.elasticsearch.xpack.application.search.action;
 
 import org.elasticsearch.TransportVersion;
 import org.elasticsearch.common.io.stream.Writeable;
-import org.elasticsearch.test.AbstractWireSerializingTestCase;
 import org.elasticsearch.xcontent.XContentParser;
 import org.elasticsearch.xpack.core.ml.AbstractBWCSerializationTestCase;
 
@@ -35,11 +34,14 @@ public class DeleteSearchApplicationActionRequestSerializingTests extends Abstra
 
     @Override
     protected DeleteSearchApplicationAction.Request doParseInstance(XContentParser parser) throws IOException {
-        return  DeleteSearchApplicationAction.Request.parse(parser);
+        return DeleteSearchApplicationAction.Request.parse(parser);
     }
 
     @Override
-    protected DeleteSearchApplicationAction.Request mutateInstanceForVersion(DeleteSearchApplicationAction.Request instance, TransportVersion version) {
+    protected DeleteSearchApplicationAction.Request mutateInstanceForVersion(
+        DeleteSearchApplicationAction.Request instance,
+        TransportVersion version
+    ) {
         return new DeleteSearchApplicationAction.Request(instance.getName());
     }
 }

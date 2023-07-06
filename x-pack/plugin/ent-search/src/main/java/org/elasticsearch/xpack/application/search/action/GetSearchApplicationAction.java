@@ -14,19 +14,15 @@ import org.elasticsearch.action.ActionType;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
-import org.elasticsearch.script.Script;
 import org.elasticsearch.xcontent.ConstructingObjectParser;
 import org.elasticsearch.xcontent.ParseField;
-import org.elasticsearch.xcontent.ToXContent;
 import org.elasticsearch.xcontent.ToXContentObject;
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.xcontent.XContentParser;
 import org.elasticsearch.xpack.application.search.SearchApplication;
 import org.elasticsearch.xpack.application.search.SearchApplicationTemplate;
-import org.elasticsearch.xpack.application.search.TemplateParamValidator;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
 
 import static org.elasticsearch.action.ValidateActions.addValidationError;
@@ -95,8 +91,9 @@ public class GetSearchApplicationAction extends ActionType<GetSearchApplicationA
         );
 
         static {
-            PARSER.declareString(constructorArg(),NAME_FIELD);
+            PARSER.declareString(constructorArg(), NAME_FIELD);
         }
+
         public static Request parse(XContentParser parser) {
             return PARSER.apply(parser, null);
         }
@@ -119,7 +116,6 @@ public class GetSearchApplicationAction extends ActionType<GetSearchApplicationA
             this.searchApp = new SearchApplication(in);
         }
 
-
         public Response(SearchApplication app) {
             Objects.requireNonNull(app, "Search Application cannot be null");
             this.searchApp = app;
@@ -135,47 +131,46 @@ public class GetSearchApplicationAction extends ActionType<GetSearchApplicationA
             if (Strings.isNullOrEmpty(name)) {
                 throw new IllegalArgumentException("Search Application name cannot be null or blank");
             }
-//            if (name!=null){
-                this.searchApp = new SearchApplication(name, indices, analyticsCollectionName, updatedAtMillis, template);
-//            }
-//            else {
-//                this
-//            }
+            // if (name!=null){
+            this.searchApp = new SearchApplication(name, indices, analyticsCollectionName, updatedAtMillis, template);
+            // }
+            // else {
+            // this
+            // }
 
         }
 
         private static final ConstructingObjectParser<Response, String> PARSER = new ConstructingObjectParser<>(
             "get_search_application_response",
-            p -> new Response((String) p[0], ((List<String>) p[1]).toArray(String[]::new), (String)p[2], (Long)p[3], (SearchApplicationTemplate)p[4])
+            p -> new Response((SearchApplication) p[0])
         );
         public static final ParseField SEARCH_APPLICATION_FIELD = new ParseField("searchApp");
 
         static {
-            PARSER.declareObject(constructorArg(),(p, c) -> SearchApplication.parse(p), SEARCH_APPLICATION_FIELD);
+            PARSER.declareObject(constructorArg(), (p, c) -> SearchApplication.fromXContent(c, p), SEARCH_APPLICATION_FIELD);
         }
+
         public static Response parse(XContentParser parser) {
             return PARSER.apply(parser, null);
         }
+
         public static Response fromXContent(String resourceName, XContentParser parser) throws IOException {
-            return PARSER.parse(parser, resourceName);
+            // TODO this seems not good
+            return new Response(SearchApplication.fromXContent(resourceName, parser));
         }
 
         @Override
         public void writeTo(StreamOutput out) throws IOException {
             searchApp.writeTo(out);
         }
-        public SearchApplication searchApp(){
+
+        public SearchApplication searchApp() {
             return searchApp;
         }
 
         @Override
         public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
-            builder.startObject();
-            if(searchApp.name()!=null) {
-                builder.field(SEARCH_APPLICATION_FIELD.getPreferredName(), searchApp);
-            }
-            builder.endObject();
-            return builder;
+            return searchApp.toXContent(builder, params);
         }
 
         @Override

@@ -9,7 +9,6 @@ package org.elasticsearch.xpack.application.search.action;
 
 import org.elasticsearch.TransportVersion;
 import org.elasticsearch.common.io.stream.Writeable;
-import org.elasticsearch.test.AbstractWireSerializingTestCase;
 import org.elasticsearch.xcontent.XContentParser;
 import org.elasticsearch.xpack.application.search.SearchApplicationTestUtils;
 import org.elasticsearch.xpack.core.action.util.PageParams;
@@ -44,7 +43,10 @@ public class ListSearchApplicationActionRequestSerializingTests extends Abstract
     }
 
     @Override
-    protected ListSearchApplicationAction.Request mutateInstanceForVersion(ListSearchApplicationAction.Request instance, TransportVersion version) {
+    protected ListSearchApplicationAction.Request mutateInstanceForVersion(
+        ListSearchApplicationAction.Request instance,
+        TransportVersion version
+    ) {
         return new ListSearchApplicationAction.Request(instance.query(), instance.pageParams());
     }
 }

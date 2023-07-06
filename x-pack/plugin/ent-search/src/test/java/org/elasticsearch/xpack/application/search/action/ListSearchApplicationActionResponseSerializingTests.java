@@ -9,7 +9,6 @@ package org.elasticsearch.xpack.application.search.action;
 
 import org.elasticsearch.TransportVersion;
 import org.elasticsearch.common.io.stream.Writeable;
-import org.elasticsearch.test.AbstractWireSerializingTestCase;
 import org.elasticsearch.xcontent.XContentParser;
 import org.elasticsearch.xpack.application.search.SearchApplication;
 import org.elasticsearch.xpack.application.search.SearchApplicationListItem;
@@ -49,7 +48,10 @@ public class ListSearchApplicationActionResponseSerializingTests extends Abstrac
     }
 
     @Override
-    protected ListSearchApplicationAction.Response mutateInstanceForVersion(ListSearchApplicationAction.Response instance, TransportVersion version) {
+    protected ListSearchApplicationAction.Response mutateInstanceForVersion(
+        ListSearchApplicationAction.Response instance,
+        TransportVersion version
+    ) {
         return new ListSearchApplicationAction.Response(instance.queryPage());
     }
 }

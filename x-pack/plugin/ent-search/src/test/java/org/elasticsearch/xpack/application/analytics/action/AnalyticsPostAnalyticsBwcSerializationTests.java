@@ -9,14 +9,12 @@ package org.elasticsearch.xpack.application.analytics.action;
 
 import org.elasticsearch.TransportVersion;
 import org.elasticsearch.common.io.stream.Writeable;
-import org.elasticsearch.xcontent.ToXContent;
 import org.elasticsearch.xcontent.XContentParser;
 import org.elasticsearch.xpack.core.ml.AbstractBWCSerializationTestCase;
 
 import java.io.IOException;
 
-public class AnalyticsPostAnalyticsEventSerializationTest extends AbstractBWCSerializationTestCase<PostAnalyticsEventAction.Response> {
-
+public class AnalyticsPostAnalyticsBwcSerializationTests extends AbstractBWCSerializationTestCase<PostAnalyticsEventAction.Response> {
 
     @Override
     protected Writeable.Reader<PostAnalyticsEventAction.Response> instanceReader() {
@@ -33,15 +31,16 @@ public class AnalyticsPostAnalyticsEventSerializationTest extends AbstractBWCSer
         return null;
     }
 
-
     @Override
     protected PostAnalyticsEventAction.Response doParseInstance(XContentParser parser) throws IOException {
         return null;
     }
 
-
     @Override
-    protected PostAnalyticsEventAction.Response mutateInstanceForVersion(PostAnalyticsEventAction.Response instance, TransportVersion version) {
+    protected PostAnalyticsEventAction.Response mutateInstanceForVersion(
+        PostAnalyticsEventAction.Response instance,
+        TransportVersion version
+    ) {
         return null;
     }
 }
