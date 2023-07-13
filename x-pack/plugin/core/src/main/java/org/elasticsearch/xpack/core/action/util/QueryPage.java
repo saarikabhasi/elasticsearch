@@ -10,14 +10,18 @@ import org.elasticsearch.ResourceNotFoundException;
 import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
 import org.elasticsearch.common.io.stream.Writeable;
+import org.elasticsearch.xcontent.ConstructingObjectParser;
 import org.elasticsearch.xcontent.ParseField;
 import org.elasticsearch.xcontent.ToXContent;
 import org.elasticsearch.xcontent.ToXContentObject;
 import org.elasticsearch.xcontent.XContentBuilder;
+import org.elasticsearch.xcontent.XContentParser;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+
+import static org.elasticsearch.xcontent.ConstructingObjectParser.constructorArg;
 
 /**
  * Generic wrapper class for a page of query results and the total number of
@@ -30,6 +34,7 @@ public final class QueryPage<T extends ToXContent & Writeable> implements ToXCon
 
     public static final ParseField COUNT = new ParseField("count");
     public static final ParseField DEFAULT_RESULTS_FIELD = new ParseField("results_field");
+    public static final ParseField RESULTS = new ParseField("results");
 
     private final ParseField resultsField;
     private final List<T> results;
@@ -50,6 +55,8 @@ public final class QueryPage<T extends ToXContent & Writeable> implements ToXCon
     public static ResourceNotFoundException emptyQueryPage(ParseField resultsField) {
         return new ResourceNotFoundException("Could not find requested " + resultsField.getPreferredName());
     }
+
+
 
     @Override
     public void writeTo(StreamOutput out) throws IOException {
@@ -109,4 +116,20 @@ public final class QueryPage<T extends ToXContent & Writeable> implements ToXCon
         QueryPage<T> other = (QueryPage<T>) obj;
         return Objects.equals(results, other.results) && Objects.equals(count, other.count);
     }
+    private static final ConstructingObjectParser<QueryPage, String> PARSER = new ConstructingObjectParser<>(
+            "query_page",
+            p -> new QueryPage((List) p[0], (Long)p[1], (ParseField) p[2])
+    );
+
+    static {
+        PARSER.declareString(constructorArg(), DEFAULT_RESULTS_FIELD);
+        PARSER.declareStringArray(constructorArg(), RESULTS);
+        PARSER.declareLong(constructorArg(), COUNT);
+    }
+    public static QueryPage fromXcontent(XContentParser p) {
+        return PARSER.apply(p,null);
+    }
+
+
+
 }

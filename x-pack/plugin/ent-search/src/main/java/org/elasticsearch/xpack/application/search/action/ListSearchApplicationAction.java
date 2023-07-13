@@ -135,6 +135,10 @@ public class ListSearchApplicationAction extends ActionType<ListSearchApplicatio
             this.queryPage = new QueryPage<>(in, SearchApplicationListItem::new);
         }
 
+        public Response(QueryPage<SearchApplicationListItem> queryPage) {
+            Objects.requireNonNull(queryPage, "Query page cannot be null");
+            this.queryPage = queryPage;
+        }
         public Response(List<SearchApplicationListItem> items, Long totalResults) {
             this.queryPage = new QueryPage<>(items, totalResults, RESULT_FIELD);
         }
@@ -169,6 +173,18 @@ public class ListSearchApplicationAction extends ActionType<ListSearchApplicatio
         @Override
         public int hashCode() {
             return queryPage.hashCode();
+        }
+
+        private static final ConstructingObjectParser<Response, String> PARSER = new ConstructingObjectParser<>(
+                "list_search_application_response",
+                p -> new Response((QueryPage<SearchApplicationListItem>) p[0])
+        );
+        static {
+            PARSER.declareObject(constructorArg(), (p,c)-> QueryPage.fromXcontent(p), RESULT_FIELD);
+        }
+
+        public static Response parse(XContentParser parser) {
+            return PARSER.apply(parser, null);
         }
     }
 }
