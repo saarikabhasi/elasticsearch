@@ -7,23 +7,28 @@
 
 package org.elasticsearch.xpack.application.search.action;
 
+import org.elasticsearch.TransportVersion;
 import org.elasticsearch.common.io.stream.NamedWriteableRegistry;
+import org.elasticsearch.common.io.stream.Writeable;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregator;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.test.AbstractNamedWriteableTestCase;
+import org.elasticsearch.xcontent.XContentParser;
+import org.elasticsearch.xpack.core.ml.AbstractBWCSerializationTestCase;
 
 import java.io.IOException;
 import java.util.Arrays;
 
-public class RenderQueryResponseSerializingTests extends AbstractNamedWriteableTestCase<RenderSearchApplicationQueryAction.Response> {
+public class RenderQueryResponseSerializingTests extends AbstractBWCSerializationTestCase<RenderSearchApplicationQueryAction.Response> {
+
+    private SearchSourceBuilder searchSourceBuilder;
 
     @Override
     protected RenderSearchApplicationQueryAction.Response createTestInstance() {
-        return new RenderSearchApplicationQueryAction.Response(randomAlphaOfLengthBetween(5, 15), randomSearchSourceBuilder());
+        return new RenderSearchApplicationQueryAction.Response(randomSearchSourceBuilder());
     }
 
     @Override
@@ -44,6 +49,7 @@ public class RenderQueryResponseSerializingTests extends AbstractNamedWriteableT
                     .collectMode(randomFrom(Aggregator.SubAggCollectionMode.values()))
             );
         }
+        this.searchSourceBuilder = searchSourceBuilder;
         return searchSourceBuilder;
     }
 
@@ -62,8 +68,26 @@ public class RenderQueryResponseSerializingTests extends AbstractNamedWriteableT
         );
     }
 
+    // @Override
+    // protected Class<RenderSearchApplicationQueryAction.Response> categoryClass() {
+    // return RenderSearchApplicationQueryAction.Response.class;
+    // }
+
     @Override
-    protected Class<RenderSearchApplicationQueryAction.Response> categoryClass() {
-        return RenderSearchApplicationQueryAction.Response.class;
+    protected Writeable.Reader<RenderSearchApplicationQueryAction.Response> instanceReader() {
+        return RenderSearchApplicationQueryAction.Response::new;
+    }
+
+    @Override
+    protected RenderSearchApplicationQueryAction.Response doParseInstance(XContentParser parser) throws IOException {
+        return RenderSearchApplicationQueryAction.Response.fromXContent(parser);
+    }
+
+    @Override
+    protected RenderSearchApplicationQueryAction.Response mutateInstanceForVersion(
+        RenderSearchApplicationQueryAction.Response instance,
+        TransportVersion version
+    ) {
+        return new RenderSearchApplicationQueryAction.Response(instance.getSearchSourceBuilder());
     }
 }
